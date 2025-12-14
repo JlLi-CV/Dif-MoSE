@@ -467,7 +467,7 @@ class UNetModel(nn.Module):
                 self._feature_size += ch
                 input_block_chans.append(ch)
 
-            # 下采样块
+          
             if level != len(channel_mult) - 1:
                 out_ch = ch
                 self.input_blocks.append(
@@ -558,7 +558,7 @@ class UNetModel(nn.Module):
                         )
                     )
 
-                # 上采样块
+     
                 if level and i == num_res_blocks:
                     out_ch = ch
                     layers.append(
@@ -579,8 +579,8 @@ class UNetModel(nn.Module):
         self.out = nn.Sequential(
             normalization(ch),
             nn.SiLU(),
-            # zero_module(conv_nd(dims, model_channels, out_channels, 3, padding=1)),
-            conv_nd(dims, model_channels, out_channels, 3, padding=1),
+            zero_module(conv_nd(dims, model_channels, out_channels, 3, padding=1)),
+            # conv_nd(dims, model_channels, out_channels, 3, padding=1),
         )
 
         if self.predict_codebook_ids:
@@ -676,4 +676,5 @@ if __name__ == '__main__':
     }
 
     model = UNetModel(**config)
+
 

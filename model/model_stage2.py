@@ -280,7 +280,8 @@ class FusionModel(nn.Module):
         print("Diffusion model weights initialized")
 
     def normalize_latent(self, z):
-        return z
+        
+        return (z - z.mean()) / (z.std() + 1e-8)
 
     def forward(self, lr_hs, ms_img, hr_hs=None, mode='train'):
 
@@ -327,16 +328,16 @@ class FusionModel(nn.Module):
             sqrt_one_minus_alphas_cumprod_t = torch.sqrt(1 - alpha_t).view(-1, 1, 1, 1)
 
             z_pred = (z_noisy - sqrt_one_minus_alphas_cumprod_t * noise_pred) / (sqrt_alphas_cumprod_t + 1e-8)
+            latent_fused = z_pred.detach()
 
         else:
 
             with torch.no_grad():
                 latent_shape = (batch_size, 64, 8, 8)
                 z_pred = self.ddim_sampler.sample(self.diffusion_model, z_cond, latent_shape, timesteps=50)
+                latent_fused = z_pred
 
-
-        z_pred = self.normalize_latent(z_pred)
-
+        latent_fused  = self.normalize_latent(latent_fused)
 
         recon_hs = self.vae.decode(z_pred)
 
@@ -394,6 +395,7 @@ class FusionLoss(nn.Module):
         }
 
         return total_loss, loss_dict
+
 
 
 
